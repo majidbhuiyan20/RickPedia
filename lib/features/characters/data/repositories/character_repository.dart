@@ -51,6 +51,11 @@ class CharacterRepository {
     return box.get('current', defaultValue: 1) ?? 1;
   }
 
+  Future<List<Character>> getAllCachedCharacters() async {
+    final box = await Hive.openBox<Character>(_charactersBoxName);
+    return box.values.toList();
+  }
+
   Future<void> clearCache() async {
     final box = await Hive.openBox<Character>(_charactersBoxName);
     await box.clear();

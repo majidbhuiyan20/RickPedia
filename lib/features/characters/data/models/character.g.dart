@@ -23,13 +23,17 @@ class CharacterAdapter extends TypeAdapter<Character> {
       species: fields[3] as String,
       image: fields[4] as String,
       location: fields[5] as String?,
+      type: fields[6] as String?,
+      gender: fields[7] as String?,
+      origin: fields[8] as String?,
+      isFavorite: fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Character obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +45,15 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(4)
       ..write(obj.image)
       ..writeByte(5)
-      ..write(obj.location);
+      ..write(obj.location)
+      ..writeByte(6)
+      ..write(obj.type)
+      ..writeByte(7)
+      ..write(obj.gender)
+      ..writeByte(8)
+      ..write(obj.origin)
+      ..writeByte(9)
+      ..write(obj.isFavorite);
   }
 
   @override

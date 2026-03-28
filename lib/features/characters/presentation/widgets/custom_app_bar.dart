@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/routes/route_manager.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   const CustomAppBar({
@@ -17,7 +19,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Text(AppStrings.characters, style: TextStyle(color: Colors.white, fontSize: 29.sp, fontWeight: FontWeight.w700)),
           Spacer(),
-          Icon(Icons.error_outline, color: Color(0XFFBBB9C3),size: 30.sp,)
+          IconButton(
+            icon: Icon(Icons.favorite, color: Colors.red, size: 26.sp),
+            onPressed: () {
+              Navigator.pushNamed(context, Routes.favoritesRoute);
+            },
+          ),
         ],
       ),
       centerTitle: true,

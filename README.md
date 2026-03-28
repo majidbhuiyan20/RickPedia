@@ -47,6 +47,30 @@ Rickpedia is a feature-rich mobile application built with Flutter that allows us
 
 ---
 
+## 📸 Screenshots
+
+### Character List Screen
+Browse and search through all Rick and Morty characters with advanced filtering capabilities.
+
+![Character List](assets/images/character_list.png)
+
+### Character Details Screen
+View complete character information including status, species, location, and episodes.
+
+![Character Details](assets/images/character_details.png)
+
+### Favorites Screen
+Save and manage your favorite characters for quick access.
+
+![Favorites](assets/images/character_favorite.png)
+
+### Character Edit Screen
+Edit and customize character information with persistent local storage.
+
+![Character Edit](assets/images/character_edit.png)
+
+---
+
 ## 🏗️ Architecture
 
 ### Clean Architecture with Riverpod

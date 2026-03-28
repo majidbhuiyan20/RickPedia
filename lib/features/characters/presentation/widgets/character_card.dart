@@ -23,71 +23,76 @@ class CharacterCard extends StatelessWidget {
       },
       child: Card(
         color: Colors.grey[900],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          //mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
-              child: Image.network(
-                character.image,
-                width: double.infinity,
-                height: 110.h,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: double.infinity,
-                    height: 130.h,
-                    color: Colors.grey[700],
-                    child: const Icon(Icons.image_not_supported,
-                        color: Colors.white),
-                  );
-                },
+        child: SizedBox(
+          height: 185.h,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                child: Image.network(
+                  character.image,
+                  width: double.infinity,
+                  height: 110.h,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 110.h,
+                      color: Colors.grey[700],
+                      child: const Icon(Icons.image_not_supported,
+                          color: Colors.white),
+                    );
+                  },
+                ),
               ),
-            ),
-            Container(
-
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-              child: Column(
-
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    character.name,
-                    textAlign: TextAlign.left,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                  SizedBox(height: 1.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 4.w,
-                      vertical: 0.5.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: character.status == 'Alive'
-                          ? Colors.green.withOpacity(0.6)
-                          : Colors.red.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                    child: Text(
-                      character.status,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8.sp,
-                        fontWeight: FontWeight.bold,
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 4.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        character.name,
+                        textAlign: TextAlign.left,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10.sp,
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 8.h,),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 3.w,
+                          vertical: 2.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: character.status == 'Alive'
+                              ? Colors.green.withOpacity(0.6)
+                              : Colors.red.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                        child: Text(
+                          character.status,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 7.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

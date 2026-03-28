@@ -16,6 +16,10 @@ class FavoritesScreen extends ConsumerWidget {
       backgroundColor: AppColors.primaryColor,
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'Favorites',
           style: TextStyle(color: Colors.white),

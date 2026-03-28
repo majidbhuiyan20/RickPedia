@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/models/character.dart';
@@ -48,6 +49,10 @@ class CharacterListState {
 
 class CharacterListNotifier extends StateNotifier<CharacterListState> {
   final CharacterRepository _repository;
+  DateTime? _lastRequestTime;
+  int _retryCount = 0;
+  Timer? _retryTimer;
+  static const int _minRequestIntervalMs = 3000; // Minimum 3 second delay between requests
 
   CharacterListNotifier(this._repository)
       : super(CharacterListState(
@@ -60,6 +65,12 @@ class CharacterListNotifier extends StateNotifier<CharacterListState> {
     _initialize();
   }
 
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _initialize() async {
     final cachedPage = await _repository.getCachedPageNumber();
     state = state.copyWith(currentPage: cachedPage);
@@ -69,12 +80,28 @@ class CharacterListNotifier extends StateNotifier<CharacterListState> {
   }
 
   Future<void> fetchCharacters() async {
-    if (state.isLoading) return;
+    if (state.isLoading || !state.hasMorePages) return;
+
+    // Cancel any pending retry timer
+    _retryTimer?.cancel();
+
+    // Rate limiting: enforce minimum delay between requests
+    final now = DateTime.now();
+    if (_lastRequestTime != null) {
+      final timeSinceLastRequest = now.difference(_lastRequestTime!);
+      if (timeSinceLastRequest.inMilliseconds < _minRequestIntervalMs) {
+        await Future.delayed(
+          Duration(milliseconds: _minRequestIntervalMs - timeSinceLastRequest.inMilliseconds),
+        );
+      }
+    }
 
     state = state.copyWith(isLoading: true, error: null);
+    _lastRequestTime = DateTime.now();
 
     try {
       final newCharacters = await _repository.getCharacters(state.currentPage);
+      _retryCount = 0; // Reset retry count on success
 
       if (newCharacters.isEmpty) {
         state = state.copyWith(
@@ -90,9 +117,26 @@ class CharacterListNotifier extends StateNotifier<CharacterListState> {
         );
       }
     } catch (e) {
+      final errorMsg = e.toString();
+      
+      // Check for rate limiting error (429)
+      if (errorMsg.contains('429')) {
+        // Implement exponential backoff for rate limiting
+        _retryCount++;
+        final backoffMs = (2000 * (_retryCount * _retryCount)).clamp(0, 30000); // Max 30 second backoff
+        
+        // Schedule retry using Timer (can be cancelled)
+        _retryTimer = Timer(Duration(milliseconds: backoffMs), () {
+          if (!state.isLoading && state.hasMorePages) {
+            fetchCharacters();
+          }
+        });
+      }
+      
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: errorMsg,
+        hasMorePages: true,
       );
     }
   }

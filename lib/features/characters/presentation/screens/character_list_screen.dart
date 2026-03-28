@@ -17,8 +17,16 @@ class CharacterListScreen extends ConsumerStatefulWidget {
       _CharacterListScreenState();
 }
 
-class _CharacterListScreenState extends ConsumerState<CharacterListScreen> {
+class _CharacterListScreenState extends ConsumerState<CharacterListScreen>
+    with AutomaticKeepAliveClientMixin {
   late ScrollController _scrollController;
+  double _lastScrollPosition = 0;
+  bool _isRestoringScroll = false;
+  int _lastCharacterCount = 0;
+  bool _loadingTriggered = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -34,18 +42,44 @@ class _CharacterListScreenState extends ConsumerState<CharacterListScreen> {
   }
 
   void _onScroll() {
-    // Load more characters at bottom
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      final state = ref.read(characterListProvider);
-      if (state.hasMorePages && !state.isLoading) {
-        ref.read(characterListProvider.notifier).fetchCharacters();
+    // Ignore scroll events during restoration
+    if (_isRestoringScroll) return;
+
+    // Store current scroll position
+    _lastScrollPosition = _scrollController.position.pixels;
+
+    // Load more characters - trigger when within 1000 pixels of bottom
+    // Debounce: only trigger if we haven't already triggered a load
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 1500) {
+      if (!_loadingTriggered) {
+        final state = ref.read(characterListProvider);
+        if (state.hasMorePages && !state.isLoading) {
+          _loadingTriggered = true;
+          ref.read(characterListProvider.notifier).fetchCharacters().then((_) {
+            _loadingTriggered = false;
+          });
+        }
       }
     }
   }
 
+  void _restoreScrollPosition() {
+    // Only restore if we have valid scroll position and not currently loading
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients &&
+          _lastScrollPosition > 0 &&
+          _lastScrollPosition < _scrollController.position.maxScrollExtent) {
+        _isRestoringScroll = true;
+        _scrollController.jumpTo(_lastScrollPosition);
+        _isRestoringScroll = false;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final characterState = ref.watch(characterListProvider);
     final mergedCharactersAsync = ref.watch(mergedCharacterListProvider);
     final filterState = ref.watch(searchFilterProvider);
@@ -56,12 +90,14 @@ class _CharacterListScreenState extends ConsumerState<CharacterListScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           // Refresh from first page
+          _lastScrollPosition = 0;
           await ref
               .read(characterListProvider.notifier)
               .refreshCharacters();
         },
         child: CustomScrollView(
           controller: _scrollController,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           slivers: [
             // Search bar as SliverAppBar that hides on scroll
             SliverAppBar(
@@ -137,6 +173,16 @@ class _CharacterListScreenState extends ConsumerState<CharacterListScreen> {
                     filteredCharactersProvider(mergedCharacters),
                   );
 
+                  // Only restore scroll position if new characters were added
+                  if (filteredCharacters.length > _lastCharacterCount) {
+                    _lastCharacterCount = filteredCharacters.length;
+                    _restoreScrollPosition();
+                  } else if (filteredCharacters.length < _lastCharacterCount) {
+                    // Reset if list was cleared (e.g., filter changed)
+                    _lastCharacterCount = filteredCharacters.length;
+                    _lastScrollPosition = 0;
+                  }
+
                   return _buildCharacterGridSliver(
                     context,
                     filteredCharacters,
@@ -183,6 +229,7 @@ class _CharacterListScreenState extends ConsumerState<CharacterListScreen> {
     }
 
     return SliverGrid(
+      key: ValueKey(characters.length),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         crossAxisSpacing: 8,

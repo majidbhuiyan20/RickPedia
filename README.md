@@ -62,7 +62,15 @@ View complete character information including status, species, location, and epi
 ### Favorites Screen
 Save and manage your favorite characters for quick access.
 
-<img src="assets/images/character_favorite.png" width="300" alt="Favorites"/>
+<img src="assets/images/character_favourite.png" width="300" alt="Favorites"/>
+
+**Features:**
+- ⭐ View all saved favorite characters
+- 🗑️ Remove characters from favorites
+- 🔄 Same filtering and search capabilities
+- 📱 Dedicated screen for quick access
+- 💾 Persistent storage across sessions
+- 🎯 Quick navigation to character details
 
 ### Character Edit Screen
 Edit and customize character information with persistent local storage.
